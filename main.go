@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	color_ind := map[string]uint32{
+	colorInd := map[string]uint32{
 		"red":    0,
 		"blue":   1,
 		"yellow": 2,
@@ -42,15 +42,15 @@ func main() {
 			fmt.Printf("Read error: %s\n", err)
 			return
 		}
-		now_color, ok := color_ind[strings.Replace(string(buf[:n]), "\n",
+		nowColor, ok := colorInd[strings.Replace(string(buf[:n]), "\n",
 			"", 1)]
 		if !ok {
 			fmt.Printf("Array error: %s\n", err)
 			return
 		}
 		//fmt.Printf(string(buf[:n]))
-		//fmt.Println(color_ind[strings.Replace(string(buf[:n]), "\n", "", 1)])
-		message := color[(now_color+1)%4]
+		//fmt.Println(colorInd[strings.Replace(string(buf[:n]), "\n", "", 1)])
+		message := color[(nowColor+1)%4]
 		newmessage := strings.ToLower(message)
 		conn.Write([]byte(newmessage + "\n"))
 	}
