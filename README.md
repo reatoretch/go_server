@@ -10,3 +10,9 @@ docker-compose up -d
 ```
 docker-compose exec app go run main.go
 ```
+## error対処
+dockerで他のコンテナとポートが被ってる場合の対処
+```
+sudo lsfo -i:[bindしてるポート番号]
+sudo kill [プロセス]
+```
