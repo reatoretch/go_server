@@ -6,4 +6,4 @@ services:
         build: .
         tty: true
         volumes:
-            - .:/go/src/work
+            - .:/go/src/go_server
