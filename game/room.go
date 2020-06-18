@@ -19,10 +19,11 @@ func NewRoom(roomId int) *Room {
     room.RoomId = roomId
     room.Channel = make(chan Notification)
     room.Observers = Observer{ Senders: make([]Sender, 0, 4), Subject: room.Channel }
+    go room.Observers.WaitNotice()
     return room
 }
 
-func (room Room)userJoin(sequence int, connection net.Conn) {
+func (room Room)UserJoin(sequence int, connection net.Conn) {
     var receiver Receiver = Receiver{ Id: sequence, Connection: connection, Observer: room.Channel }
-    receiver.start()
+    go receiver.Start()
 }
