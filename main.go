@@ -1,16 +1,16 @@
 package main
 
 import (
-	"net"
+    "net"
     "go_server/game"
 )
 
 func main() {
-	listener, err := net.Listen("tcp", ":1234")
+    listener, err := net.Listen("tcp", ":1234")
 
-	if err != nil {
+    if err != nil {
         panic(err);
-	}
+    }
 
     var room = game.NewRoom(0)
     ConnectionLoop(listener,0,room)
