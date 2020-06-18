@@ -12,22 +12,16 @@ func main() {
         panic(err);
 	}
 
-    var channel = make(chan game.Notification);
-    var observer game.Observer = game.Observer{ Senders: make([]game.Sender, 0, 4), Subject: channel };
-    go observer.WaitNotice();
-    waitClient(listener, 0, observer, channel);
+    var room = game.NewRoom(0)
+    ConnectionLoop(listener,0,room)
 
 }
 
-func waitClient(listener net.Listener, sequence int, observer game.Observer, channel chan game.Notification) {
-    connection, err := listener.Accept();
-
+func ConnectionLoop(listener net.Listener, sequence int, room game.Room) {
+    connection, err := listener.Accept()
     if err != nil {
-        panic(err);
+        panic(err)
     }
-
-    var receiver game.Receiver = game.Receiver{ Id: sequence, Connection: connection, Observer: channel };
-    go receiver.Start();
-
-    waitClient(listener, sequence + 1, observer, channel);
+    room.UserJoin(sequence, connection)
+    return ConnectionLoop(listener,sequence + 1,room)
 }
