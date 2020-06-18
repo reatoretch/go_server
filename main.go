@@ -12,16 +12,19 @@ func main() {
         panic(err);
     }
 
-    var room = game.NewRoom(0)
+    var room *game.Room
     ConnectionLoop(listener,0,room)
 
 }
 
-func ConnectionLoop(listener net.Listener, sequence int, room game.Room) {
+func ConnectionLoop(listener net.Listener, sequence int, room *game.Room) {
     connection, err := listener.Accept()
     if err != nil {
         panic(err)
     }
+    if sequence%4 == 0 {
+        room = game.NewRoom(sequence/4)
+    }
     room.UserJoin(sequence, connection)
-    return ConnectionLoop(listener,sequence + 1,room)
+    ConnectionLoop(listener,sequence + 1,room)
 }
