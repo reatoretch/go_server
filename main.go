@@ -7,16 +7,9 @@ import (
     "io/ioutil"
     "log"
     "net"
+    // For debugging
+    //"reflect"
 )
-
-type MoreInfo struct {
-    Id int `json:"userId"`
-    Friends []string `json:"userFriends"`
-}
-
-type Config struct {
-    Info MoreInfo `json:"userInfo"`
-}
 
 func main() {
     listener, err := net.Listen("tcp", ":1234")
@@ -30,12 +23,12 @@ func main() {
         panic(err);
     }
 
-    var config Config
+    var config map[string]interface{}
     if err := json.Unmarshal(bytes, &config); err != nil {
         log.Fatal(err)
     }
 
-    fmt.Println(config.Info.Friends[0])
+    fmt.Println(config)
 
     var room *game.Room
     ConnectionLoop(listener,0,room)
