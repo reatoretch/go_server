@@ -1,0 +1,6 @@
+{
+    "userInfo": {
+        "userId":1,
+        "userFriends":["a","b","c","d"]
+    }
+}

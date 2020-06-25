@@ -1,9 +1,22 @@
 package main
 
 import (
-    "net"
+    "encoding/json"
+    "fmt"
     "go_server/game"
+    "io/ioutil"
+    "log"
+    "net"
 )
+
+type MoreInfo struct {
+    Id int `json:"userId"`
+    Friends []string `json:"userFriends"`
+}
+
+type Config struct {
+    Info MoreInfo `json:"userInfo"`
+}
 
 func main() {
     listener, err := net.Listen("tcp", ":1234")
@@ -11,6 +24,18 @@ func main() {
     if err != nil {
         panic(err);
     }
+
+    bytes, err := ioutil.ReadFile("env_num.json")
+    if err != nil {
+        panic(err);
+    }
+
+    var config Config
+    if err := json.Unmarshal(bytes, &config); err != nil {
+        log.Fatal(err)
+    }
+
+    fmt.Println(config.Info.Friends[0])
 
     var room *game.Room
     ConnectionLoop(listener,0,room)
