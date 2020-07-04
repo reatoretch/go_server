@@ -1,6 +1,7 @@
 package game
 
 import (
+    "encoding/json"
     "net"
 )
 
@@ -9,8 +10,10 @@ type Sender struct {
     Connection net.Conn
 }
 
-func (sender Sender) SendMessage(message string) {
-    var buf = []byte(message);
+func (sender Sender) SendMessage(message map[string]interface{}) {
+    s, _ := json.Marshal(message)
+
+    var buf = []byte(s);
 
     _, error := sender.Connection.Write(buf)
     if error != nil {

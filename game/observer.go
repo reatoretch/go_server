@@ -3,12 +3,14 @@ package game
 import (
     "net"
     "fmt"
+    "go_server/game/gameLogic"
 )
 
 
 type Observer struct {
     Senders []Sender
     Subject <-chan Notification
+    Game gameLogic.GameLogic
 }
 
 func (observer Observer) WaitNotice() {
@@ -59,5 +61,3 @@ func removeSender(senderId int, senders []Sender) []Sender {
 
     return append(senders[:find], senders[find+1:]...);
 }
-
-
