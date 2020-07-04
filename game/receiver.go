@@ -20,18 +20,18 @@ func (receiver Receiver) Start() {
 func (receiver Receiver) WaitMessage() {
     var buf = make([]byte, 1024);
 
-    _, error := receiver.Connection.Read(buf);
+    n, error := receiver.Connection.Read(buf);
     if error != nil {
         receiver.Observer <- Notification{ Type: Defect, ClientId: receiver.Id }
         return;
     }
 
     var jsonText map[string]interface{}
-    if err := json.Unmarshal(buf, &jsonText); err != nil {
+    if err := json.Unmarshal(buf[:n], &jsonText); err != nil {
         log.Fatal(err)
     }
 
-    receiver.Observer <- Notification{ Type: Message, ClientId: receiver.Id, Message: jsonText}
+    receiver.Observer <- Notification{ Type: Update, ClientId: receiver.Id, Message: []map[string]interface{}{jsonText}}
 
     receiver.WaitMessage();
 }

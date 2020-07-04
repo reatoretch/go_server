@@ -5,6 +5,7 @@ import (
 	"time"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 type Player struct {
@@ -18,7 +19,7 @@ type GameLogic struct {
     TurnIdx int;
     PlayerRotation []int;
     TurnPlayer int;
-    histort []string;
+    history []string;
 }
 
 func NewPlayer(color int) Player {
@@ -40,7 +41,7 @@ func (gameLogic *GameLogic) CheckGameOver() bool{
 }
 
 func NewGameLogic() GameLogic{
-	g:=GameLogic{field,[]Player{NewPlayer(BLUE),NewPlayer(RED),NewPlayer(GREEN),NewPlayer(YELLOW)},0,[]int{1,2,3,4},0}
+	g:=GameLogic{field,[]Player{NewPlayer(BLUE),NewPlayer(RED),NewPlayer(GREEN),NewPlayer(YELLOW)},0,[]int{1,2,3,4},0,[]string{}}
 	rand.Seed(time.Now().UnixNano())
 	for i := range g.PlayerRotation {
         j := rand.Intn(i + 1)
@@ -51,24 +52,30 @@ func NewGameLogic() GameLogic{
 
 
 func (gameLogic *GameLogic) Update(playerId int,message map[string]interface{}) bool {
-	blockId, ok := message["BlockId"].(int);
+	fmt.Println(gameLogic)
+	fmt.Println(message)
+	fmt.Println(playerId)
+	blockIdf, ok := message["BlockId"].(float64);
 	if !ok{return false}
-	spin, ok := message["spin"].(int);
+	spinf, ok := message["spin"].(float64);
 	if !ok{return false}
-	fmt.Println("OK")
-	x, ok := message["x"].(int);
+	xf, ok := message["x"].(float64);
 	if !ok{return false}
-	fmt.Println("OK")
-	y, ok := message["y"].(int);
+	yf, ok := message["y"].(float64);
 	if !ok{return false}
-	fmt.Println("OK")
+	blockId:=int(blockIdf)
+	spin:=int(spinf)
+	x:=int(xf)
+	y:=int(yf)
+	playerId=playerId%4
+
 
 	if !(playerId==gameLogic.TurnIdx){return false}
 	if !gameLogic.field.canPut(x,y,spin,blockId,gameLogic.PlayerRotation[playerId]){return false}
 
 	if!gameLogic.field.putBlock(x,y,spin,blockId,gameLogic.PlayerRotation[playerId]){return false}
 
-	gameLogic.history=append(gameLogic.history,strconv.Itoa(color));
+	gameLogic.history=append(gameLogic.history,strconv.Itoa(playerId));
 	gameLogic.history=append(gameLogic.history,strconv.Itoa(x))
 	gameLogic.history=append(gameLogic.history,strconv.Itoa(y));
 	gameLogic.history=append(gameLogic.history,strconv.Itoa(blockId));
@@ -78,7 +85,7 @@ func (gameLogic *GameLogic) Update(playerId int,message map[string]interface{}) 
 }
 
 
-func (gameLogic GameLogic) CreateInitMessage() map[string]interface{}{
+func (gameLogic GameLogic) CreateInitMessage() ([]map[string]interface{}){
 	message1:=map[string]interface{}{}
 	message2:=map[string]interface{}{}
 	message3:=map[string]interface{}{}
@@ -88,6 +95,9 @@ func (gameLogic GameLogic) CreateInitMessage() map[string]interface{}{
 	message3["messageType"]="Init"
 	message4["messageType"]="Init"
 	message1["PlayerRotation"]="red,blue,yellow,green";
+	message2["PlayerRotation"]="red,blue,yellow,green";
+	message3["PlayerRotation"]="red,blue,yellow,green";
+	message4["PlayerRotation"]="red,blue,yellow,green";
 	message2["messageType"]="Init"
 	message3["messageType"]="Init"
 	message4["messageType"]="Init"
@@ -95,18 +105,19 @@ func (gameLogic GameLogic) CreateInitMessage() map[string]interface{}{
 	message2["yourColor"]="blue"
 	message3["yourColor"]="yellow"
 	message4["yourColor"]="green"
-	return message1,message2,message3,message4
+	return []map[string]interface{}{message1,message2,message3,message4}
 }
 
-func (gameLogic GameLogic) CreateUpdateMessage() map[string]interface{}{
+func (gameLogic GameLogic) CreateUpdateMessage() []map[string]interface{}{
 	message:=map[string]interface{}{}
 	message["messageType"]="Update"
 	message["Blocks"]=strings.Join(gameLogic.history[:], ",");
-	return message
+	message["Field"]="1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0";
+	return []map[string]interface{}{message,message,message,message}
 }
 
-func (gameLogic GameLogic) CreateTerminateMessage() map[string]interface{}{
+func (gameLogic GameLogic) CreateTerminateMessage() (map[string]interface{},map[string]interface{},map[string]interface{},map[string]interface{}){
 	message:=map[string]interface{}{}
 	message["messageType"]="Terminate"
-	return message
+	return message,message,message,message
 }
