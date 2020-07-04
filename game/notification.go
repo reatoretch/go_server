@@ -8,6 +8,7 @@ type NotificationType int
 
 const  (
     Message NotificationType = iota
+    Secret
     Join
     Defect
 )
