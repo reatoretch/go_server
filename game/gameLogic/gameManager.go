@@ -4,6 +4,7 @@ import (
 	"math/rand"
 	"time"
 	"fmt"
+	"strconv"
 )
 
 type Player struct {
@@ -17,6 +18,7 @@ type GameLogic struct {
     TurnIdx int;
     PlayerRotation []int;
     TurnPlayer int;
+    histort []string;
 }
 
 func NewPlayer(color int) Player {
@@ -44,7 +46,6 @@ func NewGameLogic() GameLogic{
         j := rand.Intn(i + 1)
         g.PlayerRotation[i], g.PlayerRotation[j] = g.PlayerRotation[j], g.PlayerRotation[i]
 	}
-
 	return g
 }
 
@@ -65,19 +66,42 @@ func (gameLogic *GameLogic) Update(playerId int,message map[string]interface{}) 
 	if !(playerId==gameLogic.TurnIdx){return false}
 	if !gameLogic.field.canPut(x,y,spin,blockId,gameLogic.PlayerRotation[playerId]){return false}
 
-	return gameLogic.field.putBlock(x,y,spin,blockId,gameLogic.PlayerRotation[playerId])
+	if!gameLogic.field.putBlock(x,y,spin,blockId,gameLogic.PlayerRotation[playerId]){return false}
+
+	gameLogic.history=append(gameLogic.history,strconv.Itoa(color));
+	gameLogic.history=append(gameLogic.history,strconv.Itoa(x))
+	gameLogic.history=append(gameLogic.history,strconv.Itoa(y));
+	gameLogic.history=append(gameLogic.history,strconv.Itoa(blockId));
+	gameLogic.history=append(gameLogic.history,strconv.Itoa(spin));
+
+	return true;
 }
 
 
 func (gameLogic GameLogic) CreateInitMessage() map[string]interface{}{
-	message:=map[string]interface{}{}
-	message["messageType"]="Terminate"
-	return message
+	message1:=map[string]interface{}{}
+	message2:=map[string]interface{}{}
+	message3:=map[string]interface{}{}
+	message4:=map[string]interface{}{}
+	message1["messageType"]="Init"
+	message2["messageType"]="Init"
+	message3["messageType"]="Init"
+	message4["messageType"]="Init"
+	message1["PlayerRotation"]="red,blue,yellow,green";
+	message2["messageType"]="Init"
+	message3["messageType"]="Init"
+	message4["messageType"]="Init"
+	message1["yourColor"]="red"
+	message2["yourColor"]="blue"
+	message3["yourColor"]="yellow"
+	message4["yourColor"]="green"
+	return message1,message2,message3,message4
 }
 
 func (gameLogic GameLogic) CreateUpdateMessage() map[string]interface{}{
 	message:=map[string]interface{}{}
-	message["messageType"]="Terminate"
+	message["messageType"]="Update"
+	message["Blocks"]=strings.Join(gameLogic.history[:], ",");
 	return message
 }
 
