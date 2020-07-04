@@ -3,12 +3,14 @@ package game
 import (
     "net"
     "fmt"
+    "go_server/game/gameLogic"
 )
 
 
 type Observer struct {
     Senders []Sender
     Subject <-chan Notification
+    Game gameLogic.GameLogic
 }
 
 func (observer Observer) WaitNotice() {
@@ -17,20 +19,24 @@ func (observer Observer) WaitNotice() {
     switch notice.Type {
     case Message:
         for i := range observer.Senders {
-            observer.Senders[i].SendMessage(notice.Message);
+            observer.Senders[i].SendMessage(notice.Message)
         }
+        break
 
-        break;
+    case Secret:
+        //define any sendData (usage: SendMessage(sendData))
+        observer.Senders[searchSender(notice.ClientId,observer.Senders)].SendMessage()
+        break
 
     case Join:
-        observer.Senders = appendSender(notice.ClientId, notice.Connection, observer.Senders);
-        fmt.Printf("Client %d Join, now menber count is %d\n", notice.ClientId, len(observer.Senders));
-        break;
+        observer.Senders = appendSender(notice.ClientId, notice.Connection, observer.Senders)
+        fmt.Printf("Client %d Join, now menber count is %d\n", notice.ClientId, len(observer.Senders))
+        break
 
     case Defect:
         observer.Senders = removeSender(notice.ClientId, observer.Senders);
-        fmt.Printf("Client %d defect, now menber count is %d\n", notice.ClientId, len(observer.Senders));
-        break;
+        fmt.Printf("Client %d defect, now menber count is %d\n", notice.ClientId, len(observer.Senders))
+        break
 
     default:
 
@@ -44,14 +50,7 @@ func appendSender(senderId int, connection net.Conn, senders []Sender) []Sender 
 }
 
 func removeSender(senderId int, senders []Sender) []Sender {
-    var find = -1;
-
-    for i:= range senders {
-        if ( senders[i].Id == senderId) {
-            find = i;
-            break;
-        }
-    }
+    var find = searchSender(senderId, senders)
 
     if (find == -1) {
         return senders;
@@ -60,4 +59,14 @@ func removeSender(senderId int, senders []Sender) []Sender {
     return append(senders[:find], senders[find+1:]...);
 }
 
+func searchSender(senderId int, senders []Sender) int {
+    var find = -1;
 
+    for i:= range senders {
+        if ( senders[i].Id == senderId ) {
+            find = i;
+            break;
+        }
+    }
+    return find;
+}

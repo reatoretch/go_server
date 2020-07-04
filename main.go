@@ -1,11 +1,7 @@
 package main
 
 import (
-    "encoding/json"
-    "fmt"
     "go_server/game"
-    "io/ioutil"
-    "log"
     "net"
     // For debugging
     //"reflect"
@@ -17,19 +13,6 @@ func main() {
     if err != nil {
         panic(err);
     }
-
-    bytes, err := ioutil.ReadFile("env_num.json")
-    if err != nil {
-        panic(err);
-    }
-
-    var config map[string]interface{}
-    if err := json.Unmarshal(bytes, &config); err != nil {
-        log.Fatal(err)
-    }
-
-    fmt.Println(config)
-
     var room *game.Room
     ConnectionLoop(listener,0,room)
 
