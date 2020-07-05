@@ -13,7 +13,7 @@ type Sender struct {
 func (sender Sender) SendMessage(message map[string]interface{}) {
     s, _ := json.Marshal(message)
 
-    var buf = []byte(s);
+    var buf = append(s, []byte("\n")...);
 
     _, error := sender.Connection.Write(buf)
     if error != nil {

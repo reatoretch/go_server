@@ -18,19 +18,29 @@ func (observer Observer) WaitNotice() {
 
     switch notice.Type {
     case Message:
+        observer.Game = gameLogic.NewGameLogic()
+	messages:=observer.Game.CreateInitMessage()
         for i := range observer.Senders {
-            observer.Senders[i].SendMessage(notice.Message)
+            observer.Senders[i].SendMessage(messages[i])
         }
         break
 
-    case Secret:
-        //define any sendData (usage: SendMessage(sendData))
-        observer.Senders[searchSender(notice.ClientId,observer.Senders)].SendMessage()
-        break
+    case Update:
+	if observer.Game.Update(notice.ClientId%4,notice.Message[0]){
+		fmt.Println("field update!")
+		messages:=observer.Game.CreateUpdateMessage()
+		for i := range observer.Senders {
+			observer.Senders[i].SendMessage(messages[i])
+		}
+		observer.Game.PlayerChange()
+	}
+	break
+
 
     case Join:
         observer.Senders = appendSender(notice.ClientId, notice.Connection, observer.Senders)
         fmt.Printf("Client %d Join, now menber count is %d\n", notice.ClientId, len(observer.Senders))
+
         break
 
     case Defect:

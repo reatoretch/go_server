@@ -3,7 +3,6 @@ package game
 import (
     "fmt"
     "net"
-    "go_server/game/gameLogic"
 )
 
 type Room struct {
@@ -31,10 +30,7 @@ func (room Room)UserJoin(sequence int, connection net.Conn) {
 
     //The game starts as soon as 4 members have gathered
     if sequence%4 == 3 {
-        room.Observers.Game = gameLogic.NewGameLogic()
-        room.Channel <- Notification{Type: Message, ClientId: receiver.Id, 
-                                            Message: room.Observers.Game.CreateInitMessage(),
-                                         Connection: connection}
+        room.Channel <- Notification{Type: Message}
         //For debugging
         fmt.Println(room.Observers.Game)
     }
