@@ -3,6 +3,7 @@ package game
 import (
     "fmt"
     "net"
+    "time"
 )
 
 type Room struct {
@@ -30,6 +31,7 @@ func (room Room)UserJoin(sequence int, connection net.Conn) {
 
     //The game starts as soon as 4 members have gathered
     if sequence%4 == 3 {
+	time.Sleep(time.Second * 1)
         room.Channel <- Notification{Type: Message}
         //For debugging
         fmt.Println(room.Observers.Game)

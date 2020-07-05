@@ -13,6 +13,21 @@ type Player struct {
     Color int
 }
 
+func (player Player) canPut(game *GameLogic) bool{
+	fmt.Println(player.Color)
+	for i,v:= range player.blockIds{
+		if !v{continue}
+		for j:=0;j<900;j++{
+			for spin:=0;spin<4;spin++{
+				//fmt.Println(-3+j/30,-3+j%30,spin,i,game.PlayerRotation[player.Color])
+				if game.field.canPut(-3+j/30,-3+j%30,spin,i,game.PlayerRotation[player.Color]){return true}
+			}
+		}
+	}
+	return false;
+}
+
+
 type GameLogic struct {
     field Field
     player []Player
@@ -31,17 +46,28 @@ func NewPlayer(color int) Player {
 }
 
 func (gameLogic *GameLogic) PlayerChange() bool{
-  gameLogic.TurnIdx=(gameLogic.TurnIdx+1)%4;
-  gameLogic.TurnPlayer=gameLogic.PlayerRotation[gameLogic.TurnIdx];
-  return gameLogic.CheckGameOver();
+	if gameLogic.CheckGameOver(){fmt.Println("gameOver");return true}
+	for{
+		gameLogic.TurnIdx=(gameLogic.TurnIdx+1)%4;
+		gameLogic.TurnPlayer=gameLogic.PlayerRotation[gameLogic.TurnIdx];
+		if gameLogic.player[gameLogic.TurnIdx].canPut(gameLogic){break}
+	}
+
+
+	return false
 }
 
 func (gameLogic *GameLogic) CheckGameOver() bool{
-	return false;
+	canPut:=false;
+	for i:=0;i<4;i++{
+		fmt.Println(gameLogic.player[i].canPut(gameLogic))
+		canPut=canPut||gameLogic.player[i].canPut(gameLogic)
+	}
+	return !canPut;
 }
 
 func NewGameLogic() GameLogic{
-	g:=GameLogic{field,[]Player{NewPlayer(BLUE),NewPlayer(RED),NewPlayer(GREEN),NewPlayer(YELLOW)},0,[]int{1,2,3,4},0,[]string{}}
+	g:=GameLogic{field,[]Player{NewPlayer(0),NewPlayer(1),NewPlayer(2),NewPlayer(3)},0,[]int{1,2,3,4},0,[]string{}}
 	rand.Seed(time.Now().UnixNano())
 	for i := range g.PlayerRotation {
         j := rand.Intn(i + 1)
@@ -71,7 +97,10 @@ func (gameLogic *GameLogic) Update(playerId int,message map[string]interface{}) 
 
 
 	if !(playerId==gameLogic.TurnIdx){return false}
+	fmt.Println("playerId success");
+	fmt.Println(x,y,spin,blockId)
 	if !gameLogic.field.canPut(x,y,spin,blockId,gameLogic.PlayerRotation[playerId]){return false}
+	fmt.Println("the hand ok");
 
 	if!gameLogic.field.putBlock(x,y,spin,blockId,gameLogic.PlayerRotation[playerId]){return false}
 
@@ -80,6 +109,8 @@ func (gameLogic *GameLogic) Update(playerId int,message map[string]interface{}) 
 	gameLogic.history=append(gameLogic.history,strconv.Itoa(y));
 	gameLogic.history=append(gameLogic.history,strconv.Itoa(blockId));
 	gameLogic.history=append(gameLogic.history,strconv.Itoa(spin));
+	gameLogic.player[playerId].blockIds[blockId]=false;
+	gameLogic.field.easyDisp();
 
 	return true;
 }

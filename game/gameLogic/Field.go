@@ -31,7 +31,7 @@ func (field Field) isIn(x int,y int) bool{
 func (field *Field) canPut(x int,y int,spin int,blockId int,color int) bool{
 	var edge=false;
 	var side=[][]int{{0,1},{0,-1},{1,0},{-1,0},};
-	var cross=[][]int{{1,1},{-1,-1},{1,1},{-1,1},};
+	var cross=[][]int{{1,1},{-1,-1},{1,-1},{-1,1},};
 	var targetBlock = kndBlock.array[blockId][spin]
 	for i:=0;i<kndBlock.width*kndBlock.height;i++{
 		if(!targetBlock[i]){continue;}
@@ -45,7 +45,7 @@ func (field *Field) canPut(x int,y int,spin int,blockId int,color int) bool{
 		}
 		for j:=0;j<4;j++{
 			if(!field.isIn(x+i%kndBlock.width+cross[j][0],y + i/ kndBlock.width+cross[j][1])){continue}
-			if(field.Board[y + i /kndBlock.width+cross[j][1]][x+i%kndBlock.width+cross[j][0]]==color){edge=true}
+			if(field.Board[y + i /kndBlock.width+cross[j][1]][x+i%kndBlock.width+cross[j][0]]==color){edge=true;}
 		}
 	}
 	return edge
