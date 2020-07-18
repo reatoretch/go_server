@@ -29,8 +29,10 @@ func NewRoom(roomId int) *Room {
     return room
 }
 
+//I will be passing the UUID to the sequence variable in the future.
+// variable name "sequence" is change at that time.
 func (room *Room)UserJoin(sequence int, connection net.Conn) {
-    var receiver Receiver = Receiver{ Id: sequence, Connection: connection, Observer: room.Channel }
+    var receiver Receiver = Receiver{ Id: len(room.Observers.Senders), Connection: connection, Observer: room.Channel }
     go receiver.Start()
 
     //Wait for the add sender.

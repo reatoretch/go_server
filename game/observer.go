@@ -35,7 +35,7 @@ func (observer *Observer) WaitNotice() {
         break
 
     case Update:
-	if observer.Game.Update(notice.ClientId%4,notice.Message[0]){
+	if observer.Game.Update(notice.ClientId,notice.Message[0]){
 		fmt.Println("field update!")
 		messages:=observer.Game.CreateUpdateMessage()
 		for i := range observer.Senders {
