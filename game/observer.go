@@ -6,20 +6,29 @@ import (
     "go_server/game/gameLogic"
 )
 
+type GameStatus int
+
+const (
+    Wait GameStatus = iota
+    Started
+    Finished
+)
 
 type Observer struct {
     Senders []Sender
     Subject <-chan Notification
     Game gameLogic.GameLogic
+    Status GameStatus
 }
 
-func (observer Observer) WaitNotice() {
+func (observer *Observer) WaitNotice() {
     notice := <-observer.Subject
 
     switch notice.Type {
-    case Message:
+    case InitGame:
         observer.Game = gameLogic.NewGameLogic()
 	messages:=observer.Game.CreateInitMessage()
+        observer.Status = Started
         for i := range observer.Senders {
             observer.Senders[i].SendMessage(messages[i])
         }

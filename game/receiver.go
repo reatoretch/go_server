@@ -3,7 +3,6 @@ package game
 import (
     "encoding/json"
     "net"
-    "log"
 )
 
 type Receiver struct {
@@ -27,11 +26,10 @@ func (receiver Receiver) WaitMessage() {
     }
 
     var jsonText map[string]interface{}
-    if err := json.Unmarshal(buf[:n], &jsonText); err != nil {
-        log.Fatal(err)
+    //Ignore if the parse failed.
+    if err := json.Unmarshal(buf[:n], &jsonText); err == nil {
+        receiver.Observer <- Notification{ Type: Update, ClientId: receiver.Id, Message: []map[string]interface{}{jsonText}}
     }
-
-    receiver.Observer <- Notification{ Type: Update, ClientId: receiver.Id, Message: []map[string]interface{}{jsonText}}
 
     receiver.WaitMessage();
 }

@@ -23,8 +23,8 @@ func ConnectionLoop(listener net.Listener, sequence int, room *game.Room) {
     if err != nil {
         panic(err)
     }
-    if sequence%4 == 0 {
-        room = game.NewRoom(sequence/4)
+    if  room == nil || game.Wait != room.GetStatus() {
+        room = game.NewRoom(sequence)
     }
     room.UserJoin(sequence, connection)
     ConnectionLoop(listener,sequence + 1,room)

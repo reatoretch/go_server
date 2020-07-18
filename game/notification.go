@@ -7,7 +7,7 @@ import (
 type NotificationType int
 
 const  (
-    Message NotificationType = iota
+    InitGame NotificationType = iota
     Update
     Join
     Defect
