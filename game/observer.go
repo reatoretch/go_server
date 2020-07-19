@@ -52,12 +52,24 @@ func (observer *Observer) WaitNotice() {
         observer.UserNames[notice.ClientId] = notice.UserName
         observer.UserRates[notice.ClientId] = notice.Rate
 	    fmt.Printf("%d:%s:%d Join, now menber count is %d\n", notice.ClientId,observer.UserNames[notice.ClientId], observer.UserRates[notice.ClientId], len(observer.Senders))
+        message:=map[string]interface{}{}
+        message["messageType"]="Wait"
+        message["nowWatingPlayer"]=len(observer.Senders)
+		for i := range observer.Senders {
+			observer.Senders[i].SendMessage(message)
+		}
 
         break
 
     case Defect:
         observer.Senders = removeSender(notice.ClientId, observer.Senders);
         fmt.Printf("Client %d defect, now menber count is %d\n", notice.ClientId, len(observer.Senders))
+        message:=map[string]interface{}{}
+        message["messageType"]="Wait"
+        message["nowWatingPlayer"]=len(observer.Senders)
+		for i := range observer.Senders {
+			observer.Senders[i].SendMessage(message)
+		}
         break
 
     default:
