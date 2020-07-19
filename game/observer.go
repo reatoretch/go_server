@@ -48,7 +48,7 @@ func (observer *Observer) WaitNotice() {
 
     case Join:
         observer.Senders = appendSender(notice.ClientId, notice.Connection, observer.Senders)
-        fmt.Printf("Client %d Join, now menber count is %d\n", notice.ClientId, len(observer.Senders))
+	fmt.Printf("%d:%s:%d Join, now menber count is %d\n", notice.ClientId,notice.UserName,notice.Rate, len(observer.Senders))
 
         break
 
