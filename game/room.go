@@ -24,7 +24,7 @@ func NewRoom(roomId int) *Room {
     room := new(Room)
     room.RoomId = roomId
     room.Channel = make(chan Notification)
-    room.Observers = Observer{ Senders: make([]Sender, 0, 4), Subject: room.Channel, Status: Wait }
+    room.Observers = Observer{ UserNames: make([]string, 4, 4), UserRates: make([]int, 4, 4), Senders: make([]Sender, 0, 4), Subject: room.Channel, Status: Wait }
     go func() { room.Observers.WaitNotice() }()
     return room
 }

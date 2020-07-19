@@ -15,6 +15,8 @@ const (
 )
 
 type Observer struct {
+    UserNames []string
+    UserRates []int
     Senders []Sender
     Subject <-chan Notification
     Game gameLogic.GameLogic
@@ -27,7 +29,7 @@ func (observer *Observer) WaitNotice() {
     switch notice.Type {
     case InitGame:
         observer.Game = gameLogic.NewGameLogic()
-	messages:=observer.Game.CreateInitMessage()
+	    messages:=observer.Game.CreateInitMessage(observer.UserNames,observer.UserRates)
         observer.Status = Started
         for i := range observer.Senders {
             observer.Senders[i].SendMessage(messages[i])
@@ -45,16 +47,29 @@ func (observer *Observer) WaitNotice() {
 	}
 	break
 
-
     case Join:
         observer.Senders = appendSender(notice.ClientId, notice.Connection, observer.Senders)
-	fmt.Printf("%d:%s:%d Join, now menber count is %d\n", notice.ClientId,notice.UserName,notice.Rate, len(observer.Senders))
+        observer.UserNames[notice.ClientId] = notice.UserName
+        observer.UserRates[notice.ClientId] = notice.Rate
+	    fmt.Printf("%d:%s:%d Join, now menber count is %d\n", notice.ClientId,observer.UserNames[notice.ClientId], observer.UserRates[notice.ClientId], len(observer.Senders))
+        message:=map[string]interface{}{}
+        message["messageType"]="Wait"
+        message["nowWatingPlayer"]=len(observer.Senders)
+		for i := range observer.Senders {
+			observer.Senders[i].SendMessage(message)
+		}
 
         break
 
     case Defect:
         observer.Senders = removeSender(notice.ClientId, observer.Senders);
         fmt.Printf("Client %d defect, now menber count is %d\n", notice.ClientId, len(observer.Senders))
+        message:=map[string]interface{}{}
+        message["messageType"]="Wait"
+        message["nowWatingPlayer"]=len(observer.Senders)
+		for i := range observer.Senders {
+			observer.Senders[i].SendMessage(message)
+		}
         break
 
     default:

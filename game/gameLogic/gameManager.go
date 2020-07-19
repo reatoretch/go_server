@@ -116,7 +116,7 @@ func (gameLogic *GameLogic) Update(playerId int,message map[string]interface{}) 
 }
 
 
-func (gameLogic GameLogic) CreateInitMessage() ([]map[string]interface{}){
+func (gameLogic GameLogic) CreateInitMessage(userName []string, rate []int) ([]map[string]interface{}){
 	message1:=map[string]interface{}{}
 	message2:=map[string]interface{}{}
 	message3:=map[string]interface{}{}
@@ -136,6 +136,22 @@ func (gameLogic GameLogic) CreateInitMessage() ([]map[string]interface{}){
 	message2["yourColor"]="blue"
 	message3["yourColor"]="yellow"
 	message4["yourColor"]="green"
+    message1["redPlayerName"]=userName[0]
+    message2["redPlayerName"]=userName[0]
+    message3["redPlayerName"]=userName[0]
+    message4["redPlayerName"]=userName[0]
+    message1["bluePlayerName"]=userName[1]
+    message2["bluePlayerName"]=userName[1]
+    message3["bluePlayerName"]=userName[1]
+    message4["bluePlayerName"]=userName[1]
+    message1["yellowPlayerName"]=userName[2]
+    message2["yellowPlayerName"]=userName[2]
+    message3["yellowPlayerName"]=userName[2]
+    message4["yellowPlayerName"]=userName[2]
+    message1["greenPlayerName"]=userName[3]
+    message2["greenPlayerName"]=userName[3]
+    message3["greenPlayerName"]=userName[3]
+    message4["greenPlayerName"]=userName[3]
 	return []map[string]interface{}{message1,message2,message3,message4}
 }
 
