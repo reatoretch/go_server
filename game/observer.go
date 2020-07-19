@@ -54,7 +54,7 @@ func (observer *Observer) WaitNotice() {
 	    fmt.Printf("%d:%s:%d Join, now menber count is %d\n", notice.ClientId,observer.UserNames[notice.ClientId], observer.UserRates[notice.ClientId], len(observer.Senders))
         message:=map[string]interface{}{}
         message["messageType"]="Wait"
-        message["nowWatingPlayer"]=len(observer.Senders)
+        message["nowWaitingPlayer"]=len(observer.Senders)
 		for i := range observer.Senders {
 			observer.Senders[i].SendMessage(message)
 		}
@@ -66,7 +66,7 @@ func (observer *Observer) WaitNotice() {
         fmt.Printf("Client %d defect, now menber count is %d\n", notice.ClientId, len(observer.Senders))
         message:=map[string]interface{}{}
         message["messageType"]="Wait"
-        message["nowWatingPlayer"]=len(observer.Senders)
+        message["nowWaitingPlayer"]=len(observer.Senders)
 		for i := range observer.Senders {
 			observer.Senders[i].SendMessage(message)
 		}
