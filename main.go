@@ -3,7 +3,6 @@ package main
 import (
     "go_server/game"
     "net"
-    "fmt"
     // For debugging
     //"reflect"
 )

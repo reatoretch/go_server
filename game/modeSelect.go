@@ -34,11 +34,14 @@ func (modeSelector *ModeSelector) Start(Connection net.Conn,UUID int) {
     var jsonText map[string]interface{}
     //Ignore if the parse failed.
     if err := json.Unmarshal(buf[:n], &jsonText); err == nil {
-	    fmt.Println(jsonText)
-	    fmt.Println(UUID)
+	    name, ok := jsonText["UserName"].(string);
+	    if !ok{return}
+	    rate, ok := jsonText["Rate"].(float64);
+	    if !ok{return}
+
 	    User:=new(User)
-	    User.Name="Default user"
-	    User.Rate=1500
+	    User.Name=name
+	    User.Rate=int(rate)
 
 	    if modeSelector.Rooms[modeSelector.Index].GetStatus()!=Wait{
 		    modeSelector.AppendRoom()
