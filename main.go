@@ -3,6 +3,7 @@ package main
 import (
     "go_server/game"
     "net"
+    "fmt"
     // For debugging
     //"reflect"
 )
@@ -13,19 +14,16 @@ func main() {
     if err != nil {
         panic(err);
     }
-    var room *game.Room
-    ConnectionLoop(listener,0,room)
+    modeSelector:=game.NewModeSelector()
+    ConnectionLoop(listener,0,modeSelector)
 
 }
 
-func ConnectionLoop(listener net.Listener, sequence int, room *game.Room) {
+func ConnectionLoop(listener net.Listener, sequence int, modeSelector *game.ModeSelector) {
     connection, err := listener.Accept()
     if err != nil {
         panic(err)
     }
-    if  room == nil || game.Wait != room.GetStatus() {
-        room = game.NewRoom(sequence)
-    }
-    room.UserJoin(sequence, connection)
-    ConnectionLoop(listener,sequence + 1,room)
+    go modeSelector.Start(connection,sequence)
+    ConnectionLoop(listener,sequence + 1,modeSelector)
 }

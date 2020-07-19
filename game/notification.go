@@ -18,4 +18,6 @@ type Notification struct {
     ClientId int
     Connection net.Conn
     Message []map[string]interface{}
+    UserName string
+    Rate int
 }
