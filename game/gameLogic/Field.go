@@ -49,7 +49,6 @@ func (field *Field) canPut(x int,y int,spin int,blockId int,color int) bool{
 		}
 	}
 	return edge
-
 }
 
 func (field *Field) putBlock(x int,y int ,spin int,blockId int,color int) bool{
@@ -59,9 +58,60 @@ func (field *Field) putBlock(x int,y int ,spin int,blockId int,color int) bool{
             if(!targetBlock[i]){continue;}
             field.Board[y + i / kndBlock.width][x + i % kndBlock.width] = color;
         }
-
 	return true;
 }
+
+func (field *Field)getCanPutList(color int,haveBlocks []int) [][]int {
+	sides:=[][]int{{0,1},{1,0},{-1,0},{0,-1}}
+	crosses:=[][]int{{1,1},{1,-1},{-1,1},{-1,-1}}
+	edge_map:=map[int][][]int{0:{{19,19}},1:{{19,0}},2:{{0,19}},3:{{0,0}}}
+	ans:=[][]int{}
+
+	for x:=0;x<20;x++{
+		for y:=0;y<20;y++{
+			for i,cross:=range crosses{
+				if field.isIn(x+cross[0],y+cross[1]) && field.Board[y+cross[1]][x+cross[0]]==color && field.Board[y][x]==0{
+					flag:=true
+					for _,side:=range sides{
+						if field.isIn(x+side[0],y+side[1]) && field.Board[y+side[1]][x+side[0]]==color{
+							flag=false
+						}
+					}
+					if flag{
+						edge_map[i]=append(edge_map[i],[]int{x,y})
+					}
+				}
+			}
+		}
+	}
+	for _,num :=range haveBlocks{
+		for spin:=0;spin<4;spin++{
+			for y:=-1;y<7;y++{
+				for x:=-1;x<7;x++{
+					for j,cross:=range crosses{
+						if 0<=x-cross[0] && x-cross[0]<5 &&0<=y-cross[1] && y-cross[1]<5 &&  kndBlock.array[num][spin][(y-cross[1])*5+x-cross[0]]{
+							flag:=true
+							for _,side:=range sides{
+								if 0<=x+side[0] && x+side[0]<5 && 0<=y+side[1] && y+side[1]<5 && kndBlock.array[num][spin][(y+side[1])*5+x+side[0]]{flag=false}
+							}
+							if flag{
+								for _,place :=range edge_map[j]{
+									if field.canPut(place[0]-x+cross[0],place[1]-y+cross[1],spin,num,color){
+										ans=append(ans,[]int{num,spin,place[0]-x+cross[0],place[1]-y+cross[1]})
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return ans
+}
+
+
+
 
 func (field *Field) easyDisp(){
 	for i:=0;i<field.FieldWidth*field.FieldHeight;i++{

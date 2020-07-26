@@ -44,7 +44,19 @@ func (observer *Observer) WaitNotice() {
 			observer.Senders[i].SendMessage(messages[i])
 		}
 		observer.Game.PlayerChange()
+		for observer.Senders[observer.Game.TurnIdx].DummyFlag{
+			fmt.Println("dummy_loop")
+			if observer.Game.Update(observer.Game.TurnIdx,observer.Game.CreateRandomPutMessage(observer.Game.PlayerRotation[observer.Game.TurnIdx],observer.Game.TurnIdx)){
+				fmt.Println("field_update!")
+				messages:=observer.Game.CreateUpdateMessage()
+				for i := range observer.Senders {
+					observer.Senders[i].SendMessage(messages[i])
+				}
+			}
+			observer.Game.PlayerChange()
+		}
 	}
+
 	break
 
     case Join:
@@ -62,14 +74,30 @@ func (observer *Observer) WaitNotice() {
         break
 
     case Defect:
-        observer.Senders = removeSender(notice.ClientId, observer.Senders);
-        fmt.Printf("Client %d defect, now menber count is %d\n", notice.ClientId, len(observer.Senders))
-        message:=map[string]interface{}{}
-        message["messageType"]="Wait"
-        message["nowWaitingPlayer"]=len(observer.Senders)
-		for i := range observer.Senders {
-			observer.Senders[i].SendMessage(message)
-		}
+	    if observer.Status==Wait{
+		    observer.Senders = removeSender(notice.ClientId, observer.Senders);
+		    fmt.Printf("Client %d defect, now menber count is %d\n", notice.ClientId, len(observer.Senders))
+		    message:=map[string]interface{}{}
+		    message["messageType"]="Wait"
+		    message["nowWaitingPlayer"]=len(observer.Senders)
+		    for i := range observer.Senders {
+			    observer.Senders[i].SendMessage(message)
+		    }
+	    }else if observer.Status==Started{
+		    observer.Senders[notice.ClientId].DummyFlag=true
+		    fmt.Printf("Client %d defect, change to dummy\n", notice.ClientId)
+		    for observer.Senders[observer.Game.TurnIdx].DummyFlag{
+			    fmt.Println("dummy_loop")
+			    if observer.Game.Update(observer.Game.TurnIdx,observer.Game.CreateRandomPutMessage(observer.Game.PlayerRotation[observer.Game.TurnIdx],observer.Game.TurnIdx)){
+				    fmt.Println("field_update!")
+				    messages:=observer.Game.CreateUpdateMessage()
+				    for i := range observer.Senders {
+					    observer.Senders[i].SendMessage(messages[i])
+				    }
+			    }
+			    observer.Game.PlayerChange()
+		    }
+	    }
         break
 
     default:

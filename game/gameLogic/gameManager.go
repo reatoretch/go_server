@@ -9,18 +9,24 @@ import (
 )
 
 type Player struct {
-    blockIds map[int] bool
+    blockIds []int
     Color int
+}
+
+func NewPlayer(color int) Player {
+	blocks:=[]int{}
+	for i:=0;i<20;i++{
+		blocks=append(blocks,i)
+	}
+	return Player{blocks,color}
 }
 
 func (player Player) canPut(game *GameLogic) bool{
 	fmt.Println(player.Color)
-	for i,v:= range player.blockIds{
-		if !v{continue}
+	for _,v:= range player.blockIds{
 		for j:=0;j<900;j++{
 			for spin:=0;spin<4;spin++{
-				//fmt.Println(-3+j/30,-3+j%30,spin,i,game.PlayerRotation[player.Color])
-				if game.field.canPut(-3+j/30,-3+j%30,spin,i,game.PlayerRotation[player.Color]){return true}
+				if game.field.canPut(-3+j/30,-3+j%30,spin,v,game.PlayerRotation[player.Color]){return true}
 			}
 		}
 	}
@@ -37,13 +43,6 @@ type GameLogic struct {
     history []string;
 }
 
-func NewPlayer(color int) Player {
-	blocks:=map[int] bool{};
-	for i:=0;i<20;i++{
-		blocks[i]=true;
-	}
-	return Player{blocks,color}
-}
 
 func (gameLogic *GameLogic) PlayerChange() bool{
 	if gameLogic.CheckGameOver(){fmt.Println("gameOver");return true}
@@ -78,17 +77,26 @@ func NewGameLogic() GameLogic{
 
 
 func (gameLogic *GameLogic) Update(playerId int,message map[string]interface{}) bool {
-	fmt.Println(gameLogic)
-	fmt.Println(message)
-	fmt.Println(playerId)
+	fmt.Println(message,"input message")
 	blockIdf, ok := message["BlockId"].(float64);
-	if !ok{return false}
+	if !ok{
+		fmt.Println("blockid not valid")
+		return false
+	}
 	spinf, ok := message["spin"].(float64);
-	if !ok{return false}
+	if !ok{
+		fmt.Println("spin not valid")
+		return false
+	}
 	xf, ok := message["x"].(float64);
-	if !ok{return false}
+	if !ok{
+		fmt.Println("x not valid")
+		return false
+	}
 	yf, ok := message["y"].(float64);
-	if !ok{return false}
+	if !ok{
+		return false
+	}
 	blockId:=int(blockIdf)
 	spin:=int(spinf)
 	x:=int(xf)
@@ -96,23 +104,52 @@ func (gameLogic *GameLogic) Update(playerId int,message map[string]interface{}) 
 	playerId=playerId%4
 
 
-	if !(playerId==gameLogic.TurnIdx){return false}
+	fmt.Println("turnPlayer",gameLogic.TurnIdx,",client",playerId)
+	if !(playerId==gameLogic.TurnIdx){
+		fmt.Println("not turn player")
+		fmt.Println(playerId,gameLogic.TurnIdx)
+
+		return false
+	}
 	fmt.Println("playerId success");
 	fmt.Println(x,y,spin,blockId)
-	if !gameLogic.field.canPut(x,y,spin,blockId,gameLogic.PlayerRotation[playerId]){return false}
+	if !gameLogic.field.canPut(x,y,spin,blockId,gameLogic.PlayerRotation[playerId]){
+		fmt.Println("cannot put");
+		return false
+	}
 	fmt.Println("the hand ok");
+
+	idx:=-1
+	for i,v:=range gameLogic.player[playerId].blockIds{
+		if v==blockId{
+			idx=i
+		}
+	}
+	if idx==-1{
+		fmt.Println("duplicate block")
+		return false
+	}
+	gameLogic.player[playerId].blockIds=append(gameLogic.player[playerId].blockIds[:idx],gameLogic.player[playerId].blockIds[idx+1:]...);
+	gameLogic.field.easyDisp();
 
 	if!gameLogic.field.putBlock(x,y,spin,blockId,gameLogic.PlayerRotation[playerId]){return false}
 
-	gameLogic.history=append(gameLogic.history,strconv.Itoa(playerId));
+	gameLogic.history=append(gameLogic.history,strconv.Itoa(playerId))
 	gameLogic.history=append(gameLogic.history,strconv.Itoa(x))
-	gameLogic.history=append(gameLogic.history,strconv.Itoa(y));
-	gameLogic.history=append(gameLogic.history,strconv.Itoa(blockId));
-	gameLogic.history=append(gameLogic.history,strconv.Itoa(spin));
-	gameLogic.player[playerId].blockIds[blockId]=false;
-	gameLogic.field.easyDisp();
+	gameLogic.history=append(gameLogic.history,strconv.Itoa(y))
+	gameLogic.history=append(gameLogic.history,strconv.Itoa(blockId))
+	gameLogic.history=append(gameLogic.history,strconv.Itoa(spin))
+	fmt.Println(gameLogic.CreateRandomPutMessage(gameLogic.PlayerRotation[playerId],playerId))
 
 	return true;
+}
+
+func (gameLogic GameLogic)CreateRandomPutMessage(color int,playerId int) (map[string]interface{}){
+	candidate:=gameLogic.field.getCanPutList(color,gameLogic.player[playerId].blockIds)
+	if len(candidate)==0{return nil}
+	hand:=candidate[rand.Intn(len(candidate))]
+
+	return map[string]interface{}{"BlockId":float64(hand[0]),"spin":float64(hand[1]),"x":float64(hand[2]),"y":float64(hand[3])}
 }
 
 
@@ -129,9 +166,6 @@ func (gameLogic GameLogic) CreateInitMessage(userName []string, rate []int) ([]m
 	message2["PlayerRotation"]="red,blue,yellow,green";
 	message3["PlayerRotation"]="red,blue,yellow,green";
 	message4["PlayerRotation"]="red,blue,yellow,green";
-	message2["messageType"]="Init"
-	message3["messageType"]="Init"
-	message4["messageType"]="Init"
 	message1["yourColor"]="red"
 	message2["yourColor"]="blue"
 	message3["yourColor"]="yellow"
