@@ -197,8 +197,8 @@ func (gameLogic GameLogic) CreateUpdateMessage() []map[string]interface{}{
 	return []map[string]interface{}{message,message,message,message}
 }
 
-func (gameLogic GameLogic) CreateTerminateMessage() (map[string]interface{},map[string]interface{},map[string]interface{},map[string]interface{}){
+func (gameLogic GameLogic) CreateTerminateMessage() ([]map[string]interface{}){
 	message:=map[string]interface{}{}
 	message["messageType"]="Terminate"
-	return message,message,message,message
+	return []map[string]interface{}{message,message,message,message}
 }
