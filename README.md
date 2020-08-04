@@ -3,9 +3,7 @@
 ## commandメモ
 docker起動
 ```
-docker-compose build
-
-docker-compose up -d
+docker-compose up -d --build --scale app=2
 ```
 
 ## error対処
