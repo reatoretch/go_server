@@ -23,6 +23,16 @@ type Observer struct {
     Status GameStatus
 }
 
+func (observer *Observer) Close(){
+	observer.Status=Finished
+	for i:=0;i<4;i++{
+		//connection close if the connection alive
+		if !observer.Senders[i].DummyFlag{
+			observer.Senders[i].Connection.Close()
+		}
+	}
+}
+
 func (observer *Observer) WaitNotice() {
     notice := <-observer.Subject
 
@@ -43,8 +53,8 @@ func (observer *Observer) WaitNotice() {
 		for i := range observer.Senders {
 			observer.Senders[i].SendMessage(messages[i])
 		}
-		observer.Game.PlayerChange()
-		for observer.Senders[observer.Game.TurnIdx].DummyFlag{
+		gameOver:=observer.Game.PlayerChange()
+		for observer.Senders[observer.Game.TurnIdx].DummyFlag && !gameOver{
 			fmt.Println("dummy_loop")
 			if observer.Game.Update(observer.Game.TurnIdx,observer.Game.CreateRandomPutMessage(observer.Game.PlayerRotation[observer.Game.TurnIdx],observer.Game.TurnIdx)){
 				fmt.Println("field_update!")
@@ -53,7 +63,15 @@ func (observer *Observer) WaitNotice() {
 					observer.Senders[i].SendMessage(messages[i])
 				}
 			}
-			observer.Game.PlayerChange()
+			gameOver=observer.Game.PlayerChange()
+		}
+		if gameOver{
+			messages:=observer.Game.CreateTerminateMessage()
+			for i := range observer.Senders {
+				observer.Senders[i].SendMessage(messages[i])
+			}
+			observer.Close()
+			return
 		}
 	}
 
@@ -86,7 +104,8 @@ func (observer *Observer) WaitNotice() {
 	    }else if observer.Status==Started{
 		    observer.Senders[notice.ClientId].DummyFlag=true
 		    fmt.Printf("Client %d defect, change to dummy\n", notice.ClientId)
-		    for observer.Senders[observer.Game.TurnIdx].DummyFlag{
+		    gameOver:=false
+		    for observer.Senders[observer.Game.TurnIdx].DummyFlag && !gameOver{
 			    fmt.Println("dummy_loop")
 			    if observer.Game.Update(observer.Game.TurnIdx,observer.Game.CreateRandomPutMessage(observer.Game.PlayerRotation[observer.Game.TurnIdx],observer.Game.TurnIdx)){
 				    fmt.Println("field_update!")
@@ -95,7 +114,15 @@ func (observer *Observer) WaitNotice() {
 					    observer.Senders[i].SendMessage(messages[i])
 				    }
 			    }
-			    observer.Game.PlayerChange()
+			    gameOver=observer.Game.PlayerChange()
+		    }
+		    if gameOver{
+			    messages:=observer.Game.CreateTerminateMessage()
+			    for i := range observer.Senders {
+				    observer.Senders[i].SendMessage(messages[i])
+			    }
+			    observer.Close()
+			    return
 		    }
 	    }
         break
