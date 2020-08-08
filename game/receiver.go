@@ -17,6 +17,14 @@ func (receiver *Receiver) Start(userName string ,rate int) {
 }
 
 func (receiver *Receiver) WaitMessage() {
+    defer func() {
+        if err := recover();err != nil {
+            //fmt.Println("Crash!:", err)
+            receiver.Observer <- Notification{ Type: Defect, ClientId: receiver.Id }
+            return;
+        }
+    }()
+
     var buf = make([]byte, 1024);
 
     n, error := receiver.Connection.Read(buf);
