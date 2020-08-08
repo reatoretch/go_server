@@ -34,6 +34,13 @@ func (observer *Observer) Close(){
 }
 
 func (observer *Observer) WaitNotice() {
+    defer func() {
+        //fmt.Println("GameEnd")
+        if err := recover();err != nil {
+            fmt.Println("Crash!:", err)
+        }
+    }()
+
     notice := <-observer.Subject
 
     switch notice.Type {

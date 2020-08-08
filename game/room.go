@@ -38,7 +38,7 @@ func (room *Room)UserJoin(sequence int, connection net.Conn,userName string,rate
     //Wait for the add sender.
 	time.Sleep(time.Second * 1)
     //The game starts as soon as 4 members have gathered
-    if 4 == len(room.Observers.Senders) {
+    if 4 <= len(room.Observers.Senders) {
         room.Channel <- Notification{Type: InitGame}
         //For debugging
         fmt.Println(room.Observers.Game)
