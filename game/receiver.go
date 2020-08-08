@@ -11,10 +11,10 @@ type Receiver struct {
     Observer chan<- Notification
 }
 
-func (receiver *Receiver) Start(userName string ,rate int) {
-	receiver.Observer <- Notification{ Type: Join, ClientId: receiver.Id, Connection: receiver.Connection ,UserName: userName,Rate:rate}
-	receiver.WaitMessage();
-}
+//func (receiver *Receiver) Start(userName string ,rate int) {
+//	receiver.Observer <- Notification{ Type: Join, ClientId: receiver.Id, Connection: receiver.Connection ,UserName: userName,Rate:rate}
+//	receiver.WaitMessage();
+//}
 
 func (receiver *Receiver) WaitMessage() {
     var buf = make([]byte, 1024);

@@ -33,6 +33,20 @@ func (observer *Observer) Close(){
 	}
 }
 
+func (observer *Observer) Join(ClientId int, Connection net.Conn, UserName string, Rate int) {
+    observer.Senders = appendSender(ClientId, Connection, observer.Senders)
+    observer.UserNames[ClientId] = UserName
+    observer.UserRates[ClientId] = Rate
+	fmt.Printf("%d:%s:%d Join, now menber count is %d\n", ClientId,observer.UserNames[ClientId], observer.UserRates[ClientId], len(observer.Senders))
+    message:=map[string]interface{}{}
+    message["messageType"]="Wait"
+    message["nowWaitingPlayer"]=len(observer.Senders)
+	for i := range observer.Senders {
+		observer.Senders[i].SendMessage(message)
+	}
+
+}
+
 func (observer *Observer) WaitNotice() {
     notice := <-observer.Subject
 
@@ -76,20 +90,6 @@ func (observer *Observer) WaitNotice() {
 	}
 
 	break
-
-    case Join:
-        observer.Senders = appendSender(notice.ClientId, notice.Connection, observer.Senders)
-        observer.UserNames[notice.ClientId] = notice.UserName
-        observer.UserRates[notice.ClientId] = notice.Rate
-	    fmt.Printf("%d:%s:%d Join, now menber count is %d\n", notice.ClientId,observer.UserNames[notice.ClientId], observer.UserRates[notice.ClientId], len(observer.Senders))
-        message:=map[string]interface{}{}
-        message["messageType"]="Wait"
-        message["nowWaitingPlayer"]=len(observer.Senders)
-		for i := range observer.Senders {
-			observer.Senders[i].SendMessage(message)
-		}
-
-        break
 
     case Defect:
 	    if observer.Status==Wait{
