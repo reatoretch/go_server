@@ -3,7 +3,6 @@ package game
 import (
     "fmt"
     "net"
-    "time"
 )
 
 type Room struct {
@@ -30,13 +29,14 @@ func NewRoom(roomId int) *Room {
 }
 
 //I will be passing the UUID to the sequence variable in the future.
-// variable name "sequence" is change at that time.
+// variable name "sequence" is change at that ime.
 func (room *Room)UserJoin(sequence int, connection net.Conn,userName string,rate int) {
     var receiver Receiver = Receiver{ Id: len(room.Observers.Senders), Connection: connection, Observer: room.Channel }
-    go receiver.Start(userName,rate)
+    room.Observers.Join(receiver.Id, connection, userName, rate)
+    go receiver.WaitMessage()
 
     //Wait for the add sender.
-	time.Sleep(time.Second * 1)
+	//time.Sleep(time.Second * 1)
     //The game starts as soon as 4 members have gathered
     if 4 <= len(room.Observers.Senders) {
         room.Channel <- Notification{Type: InitGame}
