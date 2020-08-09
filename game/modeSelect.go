@@ -28,27 +28,59 @@ func (modeSelector *ModeSelector) Start(Connection net.Conn,UUID int) {
     var buf = make([]byte, 1024);
     n, error := Connection.Read(buf);
     if error != nil {
-	modeSelector.Close(Connection)
+        modeSelector.Close(Connection)
         return;
     }
     var jsonText map[string]interface{}
+    fmt.Println(buf[:n])
     //Ignore if the parse failed.
     if err := json.Unmarshal(buf[:n], &jsonText); err == nil {
-	    name, ok := jsonText["UserName"].(string);
-	    if !ok{return}
-	    rate, ok := jsonText["Rate"].(float64);
-	    if !ok{return}
+        fmt.Println("marshal")
+        name, ok := jsonText["UserName"].(string);
+        if !ok{return}
+        rate, ok := jsonText["Rate"].(float64);
+        if !ok{return}
+        action, ok := jsonText["Action"].(string);
+        if !ok{return}
+        fmt.Println(action)
+        fmt.Println(ok)
 
-	    User:=new(User)
-	    User.Name=name
-	    User.Rate=int(rate)
 
-	    if modeSelector.Rooms[modeSelector.Index].GetStatus()!=Wait{
-		    modeSelector.AppendRoom()
-		    fmt.Println("appendRoom")
-	    }
-	    modeSelector.Rooms[modeSelector.Index].UserJoin(UUID,Connection,User.Name,User.Rate)
-	    return
+        User:=new(User)
+        User.Name=name
+        User.Rate=int(rate)
+
+        if action=="Join" && modeSelector.Rooms[modeSelector.Index].GetStatus()!=Wait{
+            modeSelector.AppendRoom()
+            fmt.Println("appendRoom")
+        }
+        if action=="Join"{
+            modeSelector.Rooms[modeSelector.Index].UserJoin(UUID,Connection,User.Name,User.Rate)
+        }
+        if action=="Reconnect"{
+            //find room and dicition client
+            roomId, ok := jsonText["RoomId"].(float64);
+            if(!ok){
+                modeSelector.Close(Connection)
+                return
+            }
+            userId, ok := jsonText["UserId"].(float64);
+            if(!ok){
+                modeSelector.Close(Connection)
+                return
+            }
+            if int(roomId)<0 || len(modeSelector.Rooms)<=int(roomId){
+                modeSelector.Close(Connection)
+                return
+            }
+            room:=modeSelector.Rooms[int(roomId)]
+            if room.GetStatus()!=Started{
+                modeSelector.Close(Connection)
+                return
+            }
+            room.Reconnect(Connection,int(userId))
+        }
+        return
     }
     modeSelector.Close(Connection)
     return;

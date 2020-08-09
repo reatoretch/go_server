@@ -21,6 +21,7 @@ type Observer struct {
     Subject <-chan Notification
     Game gameLogic.GameLogic
     Status GameStatus
+    RoomId int
 }
 
 func (observer *Observer) Close(){
@@ -63,6 +64,8 @@ func (observer *Observer) WaitNotice() {
 	    messages:=observer.Game.CreateInitMessage(observer.UserNames,observer.UserRates)
         observer.Status = Started
         for i := range observer.Senders {
+            messages[i]["RoomID"]=observer.RoomId
+            messages[i]["UserID"]=observer.Senders[i].Id
             observer.Senders[i].SendMessage(messages[i])
         }
         break
