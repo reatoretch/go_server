@@ -7,6 +7,7 @@ services:
         tty: true
         volumes:
             - .:/go/src/go_server
+        restart: unless-stopped
 
     app2:
         ports:
@@ -15,6 +16,7 @@ services:
         tty: true
         volumes:
             - .:/go/src/go_server
+        restart: unless-stopped
     
     proxy:
         build: ./proxy
@@ -22,4 +24,5 @@ services:
             - app:app
             - app2:app2
         ports:
-            - 1234:1234
+            - 1234:1234 
+        restart: unless-stopped
