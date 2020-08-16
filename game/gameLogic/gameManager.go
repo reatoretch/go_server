@@ -54,6 +54,7 @@ func (gameLogic *GameLogic) PlayerChange() bool{
             }
         }
 		if gameLogic.player[gameLogic.TurnPlayer].canPut(gameLogic){break}
+        fmt.Println("pass")
 	}
 	return false
 }
@@ -70,10 +71,15 @@ func (gameLogic *GameLogic) CheckGameOver() bool{
 func NewGameLogic() GameLogic{
 	g:=GameLogic{field,[]Player{NewPlayer(0),NewPlayer(1),NewPlayer(2),NewPlayer(3)},0,[]int{1,2,3,4},0,[]string{}}
 	rand.Seed(time.Now().UnixNano())
-	for i := range g.PlayerRotation {
+    for i := range g.PlayerRotation {
         j := rand.Intn(i + 1)
         g.PlayerRotation[i], g.PlayerRotation[j] = g.PlayerRotation[j], g.PlayerRotation[i]
-	}
+    }
+    for i:=0;i<4;i++{
+        if g.PlayerRotation[i]-1==g.TurnIdx{
+            g.TurnPlayer=i;
+        }
+    }
 	return g
 }
 
@@ -104,7 +110,7 @@ func (gameLogic *GameLogic) Update(playerId int,message map[string]interface{}) 
 	x:=int(xf)
 	y:=int(yf)
 	playerId=playerId%4
-	fmt.Println("turnPlayer",gameLogic.TurnIdx,",client",gameLogic.PlayerRotation[playerId]-1)
+	fmt.Println("turnPlayer",gameLogic.TurnIdx,",client",gameLogic.PlayerRotation[playerId]-1,gameLogic.TurnPlayer)
 	if !(gameLogic.TurnIdx==gameLogic.PlayerRotation[playerId]-1){
 		fmt.Println("not turn player")
 		fmt.Println(playerId,gameLogic.TurnIdx)
@@ -129,6 +135,7 @@ func (gameLogic *GameLogic) Update(playerId int,message map[string]interface{}) 
 		fmt.Println(gameLogic.player[gameLogic.TurnPlayer].blockIds)
 		return false
 	}
+    fmt.Println("delete ",gameLogic.TurnPlayer,gameLogic.player[gameLogic.TurnPlayer].blockIds[idx],gameLogic.TurnIdx)
 	gameLogic.player[gameLogic.TurnPlayer].blockIds=append(gameLogic.player[gameLogic.TurnPlayer].blockIds[:idx],gameLogic.player[gameLogic.TurnPlayer].blockIds[idx+1:]...);
 	gameLogic.field.easyDisp();
 	if!gameLogic.field.putBlock(x,y,spin,blockId,gameLogic.PlayerRotation[playerId]){return false}
@@ -152,6 +159,10 @@ func (gameLogic GameLogic)CreateRandomPutMessage(color int,playerId int) (map[st
 func (gameLogic GameLogic) CreateInitMessage(userName []string, rate []int) ([]map[string]interface{}){
     messages:=[]map[string]interface{}{map[string]interface{}{},map[string]interface{}{},map[string]interface{}{},map[string]interface{}{}}
     color:=[]string{"red","blue","yellow","green"}
+    for i := range color {
+        j := rand.Intn(i + 1)
+        color[i], color[j] = color[j], color[i]
+    }
     for i:=0;i<4;i++{
         messages[i]["messageType"]="Init"
         m:=""

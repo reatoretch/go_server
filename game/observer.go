@@ -86,8 +86,8 @@ func (observer *Observer) WaitNotice() {
 				for i := range observer.Senders {
 					observer.Senders[i].SendMessage(messages[i])
 				}
+			    gameOver=observer.Game.PlayerChange()
 			}
-			gameOver=observer.Game.PlayerChange()
 		}
 		if gameOver{
 			messages:=observer.Game.CreateTerminateMessage()
@@ -123,8 +123,8 @@ func (observer *Observer) WaitNotice() {
 				    for i := range observer.Senders {
 					    observer.Senders[i].SendMessage(messages[i])
 				    }
+			        gameOver=observer.Game.PlayerChange()
 			    }
-			    gameOver=observer.Game.PlayerChange()
 		    }
 		    if gameOver{
 			    messages:=observer.Game.CreateTerminateMessage()
