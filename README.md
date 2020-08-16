@@ -3,7 +3,7 @@
 ## commandメモ
 docker起動
 ```
-docker-compose up -d --build --scale app=2
+./startup.sh
 ```
 
 ## error対処

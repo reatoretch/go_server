@@ -1,5 +1,10 @@
 FROM golang:latest
 
+ARG UID=1001
+RUN useradd -m -u ${UID} docker
+
+USER ${UID}
+
 RUN mkdir /go/src/go_server
 
 WORKDIR /go/src/go_server
