@@ -78,16 +78,16 @@ func (observer *Observer) WaitNotice() {
 			observer.Senders[i].SendMessage(messages[i])
 		}
 		gameOver:=observer.Game.PlayerChange()
-		for observer.Senders[observer.Game.TurnIdx].DummyFlag && !gameOver{
+		for observer.Senders[observer.Game.TurnPlayer].DummyFlag && !gameOver{
 			fmt.Println("dummy_loop")
-			if observer.Game.Update(observer.Game.TurnIdx,observer.Game.CreateRandomPutMessage(observer.Game.PlayerRotation[observer.Game.TurnIdx],observer.Game.TurnIdx)){
+			if observer.Game.Update(observer.Game.TurnPlayer,observer.Game.CreateRandomPutMessage(observer.Game.PlayerRotation[observer.Game.TurnPlayer],observer.Game.TurnPlayer)){
 				fmt.Println("field_update!")
 				messages:=observer.Game.CreateUpdateMessage()
 				for i := range observer.Senders {
 					observer.Senders[i].SendMessage(messages[i])
 				}
+			    gameOver=observer.Game.PlayerChange()
 			}
-			gameOver=observer.Game.PlayerChange()
 		}
 		if gameOver{
 			messages:=observer.Game.CreateTerminateMessage()
@@ -115,16 +115,16 @@ func (observer *Observer) WaitNotice() {
 		    observer.Senders[notice.ClientId].DummyFlag=true
 		    fmt.Printf("Client %d defect, change to dummy\n", notice.ClientId)
 		    gameOver:=false
-		    for observer.Senders[observer.Game.TurnIdx].DummyFlag && !gameOver{
+		    for observer.Senders[observer.Game.TurnPlayer].DummyFlag && !gameOver{
 			    fmt.Println("dummy_loop")
-			    if observer.Game.Update(observer.Game.TurnIdx,observer.Game.CreateRandomPutMessage(observer.Game.PlayerRotation[observer.Game.TurnIdx],observer.Game.TurnIdx)){
+			    if observer.Game.Update(observer.Game.TurnPlayer,observer.Game.CreateRandomPutMessage(observer.Game.PlayerRotation[observer.Game.TurnPlayer],observer.Game.TurnPlayer)){
 				    fmt.Println("field_update!")
 				    messages:=observer.Game.CreateUpdateMessage()
 				    for i := range observer.Senders {
 					    observer.Senders[i].SendMessage(messages[i])
 				    }
+			        gameOver=observer.Game.PlayerChange()
 			    }
-			    gameOver=observer.Game.PlayerChange()
 		    }
 		    if gameOver{
 			    messages:=observer.Game.CreateTerminateMessage()

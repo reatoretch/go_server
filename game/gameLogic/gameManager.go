@@ -48,11 +48,14 @@ func (gameLogic *GameLogic) PlayerChange() bool{
 	if gameLogic.CheckGameOver(){fmt.Println("gameOver");return true}
 	for{
 		gameLogic.TurnIdx=(gameLogic.TurnIdx+1)%4;
-		gameLogic.TurnPlayer=gameLogic.PlayerRotation[gameLogic.TurnIdx];
-		if gameLogic.player[gameLogic.TurnIdx].canPut(gameLogic){break}
+        for i:=0;i<4;i++{
+            if gameLogic.PlayerRotation[i]-1==gameLogic.TurnIdx{
+                gameLogic.TurnPlayer=i;
+            }
+        }
+		if gameLogic.player[gameLogic.TurnPlayer].canPut(gameLogic){break}
+        fmt.Println("pass")
 	}
-
-
 	return false
 }
 
@@ -68,10 +71,15 @@ func (gameLogic *GameLogic) CheckGameOver() bool{
 func NewGameLogic() GameLogic{
 	g:=GameLogic{field,[]Player{NewPlayer(0),NewPlayer(1),NewPlayer(2),NewPlayer(3)},0,[]int{1,2,3,4},0,[]string{}}
 	rand.Seed(time.Now().UnixNano())
-	for i := range g.PlayerRotation {
+    for i := range g.PlayerRotation {
         j := rand.Intn(i + 1)
         g.PlayerRotation[i], g.PlayerRotation[j] = g.PlayerRotation[j], g.PlayerRotation[i]
-	}
+    }
+    for i:=0;i<4;i++{
+        if g.PlayerRotation[i]-1==g.TurnIdx{
+            g.TurnPlayer=i;
+        }
+    }
 	return g
 }
 
@@ -102,13 +110,11 @@ func (gameLogic *GameLogic) Update(playerId int,message map[string]interface{}) 
 	x:=int(xf)
 	y:=int(yf)
 	playerId=playerId%4
-
-
-	fmt.Println("turnPlayer",gameLogic.TurnIdx,",client",playerId)
-	if !(playerId==gameLogic.TurnIdx){
+	fmt.Println("turnPlayer",gameLogic.TurnIdx,",client",gameLogic.PlayerRotation[playerId]-1,gameLogic.TurnPlayer)
+	if !(gameLogic.TurnIdx==gameLogic.PlayerRotation[playerId]-1){
 		fmt.Println("not turn player")
 		fmt.Println(playerId,gameLogic.TurnIdx)
-
+		fmt.Println(playerId,gameLogic.PlayerRotation)
 		return false
 	}
 	fmt.Println("playerId success");
@@ -118,29 +124,27 @@ func (gameLogic *GameLogic) Update(playerId int,message map[string]interface{}) 
 		return false
 	}
 	fmt.Println("the hand ok");
-
 	idx:=-1
-	for i,v:=range gameLogic.player[playerId].blockIds{
+	for i,v:=range gameLogic.player[gameLogic.TurnPlayer].blockIds{
 		if v==blockId{
 			idx=i
 		}
 	}
 	if idx==-1{
 		fmt.Println("duplicate block")
+		fmt.Println(gameLogic.player[gameLogic.TurnPlayer].blockIds)
 		return false
 	}
-	gameLogic.player[playerId].blockIds=append(gameLogic.player[playerId].blockIds[:idx],gameLogic.player[playerId].blockIds[idx+1:]...);
+    fmt.Println("delete ",gameLogic.TurnPlayer,gameLogic.player[gameLogic.TurnPlayer].blockIds[idx],gameLogic.TurnIdx)
+	gameLogic.player[gameLogic.TurnPlayer].blockIds=append(gameLogic.player[gameLogic.TurnPlayer].blockIds[:idx],gameLogic.player[gameLogic.TurnPlayer].blockIds[idx+1:]...);
 	gameLogic.field.easyDisp();
-
 	if!gameLogic.field.putBlock(x,y,spin,blockId,gameLogic.PlayerRotation[playerId]){return false}
-
-	gameLogic.history=append(gameLogic.history,strconv.Itoa(playerId))
+	gameLogic.history=append(gameLogic.history,strconv.Itoa(gameLogic.PlayerRotation[playerId]-1))
 	gameLogic.history=append(gameLogic.history,strconv.Itoa(x))
 	gameLogic.history=append(gameLogic.history,strconv.Itoa(y))
 	gameLogic.history=append(gameLogic.history,strconv.Itoa(blockId))
 	gameLogic.history=append(gameLogic.history,strconv.Itoa(spin))
 	fmt.Println(gameLogic.CreateRandomPutMessage(gameLogic.PlayerRotation[playerId],playerId))
-
 	return true;
 }
 
@@ -148,45 +152,29 @@ func (gameLogic GameLogic)CreateRandomPutMessage(color int,playerId int) (map[st
 	candidate:=gameLogic.field.getCanPutList(color,gameLogic.player[playerId].blockIds)
 	if len(candidate)==0{return nil}
 	hand:=candidate[rand.Intn(len(candidate))]
-
 	return map[string]interface{}{"BlockId":float64(hand[0]),"spin":float64(hand[1]),"x":float64(hand[2]),"y":float64(hand[3])}
 }
 
 
 func (gameLogic GameLogic) CreateInitMessage(userName []string, rate []int) ([]map[string]interface{}){
-	message1:=map[string]interface{}{}
-	message2:=map[string]interface{}{}
-	message3:=map[string]interface{}{}
-	message4:=map[string]interface{}{}
-	message1["messageType"]="Init"
-	message2["messageType"]="Init"
-	message3["messageType"]="Init"
-	message4["messageType"]="Init"
-	message1["PlayerRotation"]="red,blue,yellow,green";
-	message2["PlayerRotation"]="red,blue,yellow,green";
-	message3["PlayerRotation"]="red,blue,yellow,green";
-	message4["PlayerRotation"]="red,blue,yellow,green";
-	message1["yourColor"]="red"
-	message2["yourColor"]="blue"
-	message3["yourColor"]="yellow"
-	message4["yourColor"]="green"
-    message1["redPlayerName"]=userName[0]
-    message2["redPlayerName"]=userName[0]
-    message3["redPlayerName"]=userName[0]
-    message4["redPlayerName"]=userName[0]
-    message1["bluePlayerName"]=userName[1]
-    message2["bluePlayerName"]=userName[1]
-    message3["bluePlayerName"]=userName[1]
-    message4["bluePlayerName"]=userName[1]
-    message1["yellowPlayerName"]=userName[2]
-    message2["yellowPlayerName"]=userName[2]
-    message3["yellowPlayerName"]=userName[2]
-    message4["yellowPlayerName"]=userName[2]
-    message1["greenPlayerName"]=userName[3]
-    message2["greenPlayerName"]=userName[3]
-    message3["greenPlayerName"]=userName[3]
-    message4["greenPlayerName"]=userName[3]
-	return []map[string]interface{}{message1,message2,message3,message4}
+    messages:=[]map[string]interface{}{map[string]interface{}{},map[string]interface{}{},map[string]interface{}{},map[string]interface{}{}}
+    color:=[]string{"red","blue","yellow","green"}
+    for i := range color {
+        j := rand.Intn(i + 1)
+        color[i], color[j] = color[j], color[i]
+    }
+    for i:=0;i<4;i++{
+        messages[i]["messageType"]="Init"
+        m:=""
+        for j:=0;j<4;j++{
+            m+=color[j]
+            if j!=3{m+=","}
+            messages[i][color[gameLogic.PlayerRotation[j]-1]+"PlayerName"]=userName[j]
+        }
+        messages[i]["PlayerRotation"]=m
+        messages[i]["yourColor"]=color[gameLogic.PlayerRotation[i]-1]
+    }
+    return messages
 }
 
 func (gameLogic GameLogic) CreateUpdateMessage() []map[string]interface{}{
