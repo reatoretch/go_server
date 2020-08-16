@@ -3,7 +3,7 @@
 ## commandメモ
 docker起動
 ```
-./startup
+./startup.sh
 ```
 
 ## error対処
