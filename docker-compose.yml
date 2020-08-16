@@ -26,3 +26,12 @@ services:
         ports:
             - 1234:1234 
         restart: unless-stopped
+
+    flask:
+        ports:
+            - 8080:8080
+        build: ./support_version
+        tty: true
+        volumes:
+            - ./support_version:/home/docker/src
+        restart: unless-stopped
