@@ -11,11 +11,16 @@ ARG dir=/home/docker/src
 
 WORKDIR $dir
 
-RUN pip install flask
+RUN pip install flask 
+
+ENV PATH $PATH:/home/docker/.local/bin
 
 ENV FLASK_APP "app.py"
 
+RUN pip install uwsgi
+
+
 ADD . $dir
 
-CMD ["python", "-m", "flask", "run", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["uwsgi", "--plugin", "http,python", "--http", "0.0.0.0:8080", "--wsgi-file", "app.py", "--callable", "app"]
 
