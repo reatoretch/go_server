@@ -11,7 +11,13 @@ type Sender struct {
     DummyFlag bool
 }
 
-func (sender Sender) SendMessage(message map[string]interface{}) {
+func (sender* Sender) SendMessage(message map[string]interface{}) {
+    defer func() {
+        //fmt.Println("GameEnd")
+        if err := recover();err != nil {
+            sender.DummyFlag=true
+        }
+    }()
     s, _ := json.Marshal(message)
 
     var buf = append(s, []byte("\n")...);

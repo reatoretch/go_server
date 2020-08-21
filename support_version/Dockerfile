@@ -22,5 +22,5 @@ RUN pip install uwsgi
 
 ADD . $dir
 
-CMD ["uwsgi", "--plugin", "http,python", "--http", "0.0.0.0:8080", "--wsgi-file", "app.py", "--callable", "app"]
+CMD ["uwsgi",  "--http", "0.0.0.0:8080", "--wsgi-file", "app.py", "--callable", "app"]
 

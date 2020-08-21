@@ -53,6 +53,13 @@ func (observer *Observer) WaitNotice() {
         //fmt.Println("GameEnd")
         if err := recover();err != nil {
             fmt.Println("Crash!:", err)
+            observer.Status=Finished
+            message:=map[string]interface{}{}
+            message["messageType"]="Error"
+            for i := range observer.Senders {
+                observer.Senders[i].SendMessage(message)
+                observer.Senders[i].Connection.Close()
+            }
         }
     }()
 
