@@ -41,6 +41,7 @@ type GameLogic struct {
     PlayerRotation []int;
     TurnPlayer int;
     history []string;
+    color []string;
 }
 
 
@@ -69,7 +70,7 @@ func (gameLogic *GameLogic) CheckGameOver() bool{
 }
 
 func NewGameLogic() GameLogic{
-	g:=GameLogic{field,[]Player{NewPlayer(0),NewPlayer(1),NewPlayer(2),NewPlayer(3)},0,[]int{1,2,3,4},0,[]string{}}
+	g:=GameLogic{field,[]Player{NewPlayer(0),NewPlayer(1),NewPlayer(2),NewPlayer(3)},0,[]int{1,2,3,4},0,[]string{},[]string{"red","blue","yellow","green"},}
 	rand.Seed(time.Now().UnixNano())
     for i := range g.PlayerRotation {
         j := rand.Intn(i + 1)
@@ -156,23 +157,23 @@ func (gameLogic GameLogic)CreateRandomPutMessage(color int,playerId int) (map[st
 }
 
 
-func (gameLogic GameLogic) CreateInitMessage(userName []string, rate []int) ([]map[string]interface{}){
+func (gameLogic *GameLogic) CreateInitMessage(userName []string, rate []int) ([]map[string]interface{}){
     messages:=[]map[string]interface{}{map[string]interface{}{},map[string]interface{}{},map[string]interface{}{},map[string]interface{}{}}
-    color:=[]string{"red","blue","yellow","green"}
-    for i := range color {
+    for i := range gameLogic.color {
         j := rand.Intn(i + 1)
-        color[i], color[j] = color[j], color[i]
+        gameLogic.color[i], gameLogic.color[j] = gameLogic.color[j], gameLogic.color[i]
     }
     for i:=0;i<4;i++{
         messages[i]["messageType"]="Init"
         m:=""
         for j:=0;j<4;j++{
-            m+=color[j]
+            m+=gameLogic.color[j]
             if j!=3{m+=","}
-            messages[i][color[gameLogic.PlayerRotation[j]-1]+"PlayerName"]=userName[j]
+            messages[i][gameLogic.color[gameLogic.PlayerRotation[j]-1]+"PlayerName"]=userName[j]
+            messages[i][gameLogic.color[gameLogic.PlayerRotation[j]-1]+"Rate"]=rate[j]
         }
         messages[i]["PlayerRotation"]=m
-        messages[i]["yourColor"]=color[gameLogic.PlayerRotation[i]-1]
+        messages[i]["yourColor"]=gameLogic.color[gameLogic.PlayerRotation[i]-1]
     }
     return messages
 }
@@ -185,8 +186,60 @@ func (gameLogic GameLogic) CreateUpdateMessage() []map[string]interface{}{
 	return []map[string]interface{}{message,message,message,message}
 }
 
-func (gameLogic GameLogic) CreateTerminateMessage() ([]map[string]interface{}){
-	message:=map[string]interface{}{}
-	message["messageType"]="Terminate"
-	return []map[string]interface{}{message,message,message,message}
+func (gameLogic GameLogic) CreateTerminateMessage(rates []int) ([]map[string]interface{}){
+    message:=map[string]interface{}{}
+    message["messageType"]="Terminate"
+    rateChanges:=gameLogic.calcRates(rates,gameLogic.getRanking())
+    for i:=0;i<4;i++{
+        message[gameLogic.color[i]]=rateChanges[i]
+    }
+    return []map[string]interface{}{message,message,message,message}
+}
+
+//maybe Corresponds to SenderIndex
+func (gameLogic GameLogic)getRanking() []int{
+    numBlocks:=[]int{0,0,0,0}
+    ranking:=[]int{0,0,0,0}
+    for i:=0;i<4;i++{
+        for _,v:=range gameLogic.player[i].blockIds{
+            for _,j:=range kndBlock.array[v][0]{
+                if(j){numBlocks[i]++}
+            }
+        }
+    }
+    for i:=0;i<4;i++{
+        minv:=10000
+        minId:=-1
+        for j:=0;j<4;j++{
+            fmt.Println(numBlocks[j])
+            if numBlocks[j]<minv && ranking[j]==0{
+                minId=j
+                minv=numBlocks[j]
+            }
+        }
+        ranking[minId]=i+1
+    }
+    return ranking
+}
+
+func (gameLogic GameLogic)calcRates(rates []int,ranking []int) []int{
+    rateChanges:=[]int{0,0,0,0}
+    sumRates:=0
+    for _,i := range rates{sumRates+=i}
+    for  i:=0; i<4; i++ {
+        diffRates:=(sumRates-rates[i])/3-rates[i]
+        if diffRates>400{diffRates=400}
+        if diffRates < -400{diffRates=-400}
+
+        if ranking[i]==1 || ranking[i]==2 {
+            rateChanges[i]+=int(16.0+0.04*float64(diffRates))
+        }else{
+            diffRates*=-1
+            rateChanges[i]-=int(16.0+0.04*float64(diffRates))
+        }
+        if ranking[i]==2 || ranking[i]==3{
+            rateChanges[i]/=2
+        }
+    }
+    return rateChanges
 }
