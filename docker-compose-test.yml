@@ -1,0 +1,37 @@
+version: '3'
+services:
+    app:
+        ports:
+            - 1234
+        build: .
+        tty: true
+        volumes:
+            - .:/go/src/go_server
+        restart: unless-stopped
+
+    app2:
+        ports:
+            - 1234
+        build: .
+        tty: true
+        volumes:
+            - .:/go/src/go_server
+        restart: unless-stopped
+    
+    proxy:
+        build: ./proxy
+        links:
+            - app:app
+            - app2:app2
+        ports:
+            - 1235:1234 
+        restart: unless-stopped
+
+    flask:
+        ports:
+            - 8081:8080
+        build: ./support_version
+        tty: true
+        volumes:
+            - ./support_version:/home/docker/src
+        restart: unless-stopped
