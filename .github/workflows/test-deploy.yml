@@ -3,7 +3,7 @@ name: testDeploy
 on:
   push:
     tags:
-      - 'v*'
+      - 'v\d\.\d\.\d-test'
 
 jobs:
   deploy:
@@ -25,5 +25,5 @@ jobs:
           git fetch --all && \
           git reset --hard origin/master && \
           git pull origin master \
-          ./startup.sh
+          make test
           "
