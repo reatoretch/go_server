@@ -1,12 +1,13 @@
-name: testDeploy
+name: productionDeploy
 
 on:
   push:
     tags:
-      - 'v*'
+      - 'v\d\.\d\.\d'
 
 jobs:
   deploy:
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     steps:
       - name: Check out branch 
@@ -25,5 +26,5 @@ jobs:
           git fetch --all && \
           git reset --hard origin/master && \
           git pull origin master \
-          ./startup.sh
+          make run
           "
