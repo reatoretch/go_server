@@ -17,14 +17,13 @@ jobs:
           PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
           USER_NAME: ${{ secrets.USER_NAME }}
           HOST_NAME: ${{ secrets.HOST_NAME }}
+          TAG: ${{ github.ref }}
         run: |
-          # SSH接続して、git pullする
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOST_NAME} "
           cd /home/$USER_NAME/production/go_server && \
-          git checkout master && \
-          git fetch --all && \
-          git reset --hard origin/master && \
-          git pull origin master && \
+          git fetch origin +$TAG:$TAG --no-tags && \
+          git reset --hard $TAG && \
+          git co $TAG && \
           make run
           "
