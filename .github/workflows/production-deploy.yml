@@ -21,7 +21,7 @@ jobs:
           # SSH接続して、git pullする
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOST_NAME} "
-          cd /home/$USER_NAME/go_server && \
+          cd /home/$USER_NAME/production/go_server && \
           git checkout master && \
           git fetch --all && \
           git reset --hard origin/master && \

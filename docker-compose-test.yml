@@ -1,21 +1,21 @@
 version: '3'
 services:
-    app:
+    app_test:
         build: .
         tty: true
         volumes:
             - .:/go/src/go_server
         restart: unless-stopped
     
-    proxy:
+    proxy_test:
         build: ./proxy
         links:
-            - app:app
+            - app_test:app_test
         ports:
             - 1235:1234 
         restart: unless-stopped
 
-    flask:
+    flask_test:
         ports:
             - 8081:8080
         build: ./support_version
