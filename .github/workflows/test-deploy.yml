@@ -24,6 +24,6 @@ jobs:
           cd /home/$USER_NAME/test/go_server && \
           git fetch origin +$TAG:$TAG --no-tags && \
           git reset --hard $TAG && \
-          git co $TAG && \
+          git checkout $TAG && \
           make test
           "
