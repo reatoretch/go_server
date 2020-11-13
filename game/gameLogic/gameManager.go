@@ -200,6 +200,9 @@ func (gameLogic GameLogic) CreateTerminateMessage(rates []int) ([]map[string]int
 func (gameLogic GameLogic)getRanking() []int{
     numBlocks:=[]int{0,0,0,0}
     ranking:=[]int{0,0,0,0}
+    rankNum:=0
+    rankChange:=0
+    beforeRankBlocks:=-1
     for i:=0;i<4;i++{
         for _,v:=range gameLogic.player[i].blockIds{
             for _,j:=range kndBlock.array[v][0]{
@@ -217,28 +220,37 @@ func (gameLogic GameLogic)getRanking() []int{
                 minv=numBlocks[j]
             }
         }
-        ranking[minId]=i+1
+        rankChange++
+        if minv!=beforeRankBlocks {
+          rankNum+=rankChange
+          rankChange=0
+        }
+        ranking[minId]=rankNum
+        beforeRankBlocks=minv
     }
+    fmt.Println("ranking",ranking)
     return ranking
+}
+
+func calcRate(rate1 int,rate2 int)int{
+    winRate:=float64(0.5)+float64(rate2-rate1)/800.0
+    if winRate>1{winRate=1}
+    if winRate<0{winRate=0}
+    diff:=int(32*winRate)
+    return diff
 }
 
 func (gameLogic GameLogic)calcRates(rates []int,ranking []int) []int{
     rateChanges:=[]int{0,0,0,0}
-    sumRates:=0
-    for _,i := range rates{sumRates+=i}
     for  i:=0; i<4; i++ {
-        diffRates:=(sumRates-rates[i])/3-rates[i]
-        if diffRates>400{diffRates=400}
-        if diffRates < -400{diffRates=-400}
-
-        if ranking[i]==1 || ranking[i]==2 {
-            rateChanges[i]+=int(16.0+0.04*float64(diffRates))
-        }else{
-            diffRates*=-1
-            rateChanges[i]-=int(16.0+0.04*float64(diffRates))
-        }
-        if ranking[i]==2 || ranking[i]==3{
-            rateChanges[i]/=2
+        for j:=0; j<4; j++{
+            if ranking[i]==ranking[j]{continue}
+            if ranking[i]<ranking[j]{
+                rateChanges[i]+=calcRate(rates[i],rates[j])
+            }
+            if ranking[i]>ranking[j]{
+                rateChanges[i]-=calcRate(rates[j],rates[i])
+            }
         }
     }
     return rateChanges
