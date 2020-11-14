@@ -191,7 +191,7 @@ func (gameLogic GameLogic) CreateTerminateMessage(rates []int) ([]map[string]int
     message["messageType"]="Terminate"
     rateChanges:=gameLogic.calcRates(rates,gameLogic.getRanking())
     for i:=0;i<4;i++{
-        message[gameLogic.color[i]]=rateChanges[i]
+        message[gameLogic.color[gameLogic.PlayerRotation[i]-1]]=rateChanges[i]
     }
     return []map[string]interface{}{message,message,message,message}
 }
@@ -253,5 +253,6 @@ func (gameLogic GameLogic)calcRates(rates []int,ranking []int) []int{
             }
         }
     }
+    fmt.Println("rateChanges",rateChanges);
     return rateChanges
 }
