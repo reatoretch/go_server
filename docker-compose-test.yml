@@ -1,6 +1,6 @@
 version: '3'
 services:
-    app_test:
+    app:
         build: .
         tty: true
         volumes:
@@ -10,7 +10,7 @@ services:
     proxy_test:
         build: ./proxy
         links:
-            - app_test:app_test
+            - app:app
         ports:
             - 1235:1234 
         restart: unless-stopped
